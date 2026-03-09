@@ -16,6 +16,7 @@
   --c4:#38b85a;--c5:#9b6ef5;--c6:#d4b830;
   --c7:#28d090;--c8:#8a9ab8;
   --hh:56px; /* header height */
+  --ph:44px; /* pills bar height */
   --bh:54px; /* bottom bar height */
   --green-wa:#25D366;
 }
@@ -73,10 +74,30 @@ header{
 /* ══ MAP ══ */
 #map{
   position:fixed;
-  top:var(--hh);left:0;right:0;
+  top:calc(var(--hh) + var(--ph));left:0;right:0;
   bottom:var(--bh);
   z-index:1;
 }
+
+/* ══ PILLS BAR ══ */
+.pills-bar{
+  position:fixed;top:var(--hh);left:0;right:0;z-index:1090;
+  height:var(--ph);background:var(--s1);border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:.4rem;
+  padding:0 .85rem;overflow-x:auto;
+}
+.pills-bar::-webkit-scrollbar{display:none}
+.cpill{
+  flex-shrink:0;padding:.26rem .75rem;border-radius:20px;
+  font-size:.7rem;font-weight:700;cursor:pointer;
+  border:1.5px solid rgba(255,255,255,.18);
+  color:var(--t2);background:transparent;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;
+  transition:all .15s;white-space:nowrap;
+}
+.cpill.todos{border-color:rgba(255,255,255,.35);color:var(--t1)}
+.cpill.todos.active{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.6)}
+.cpill.active{color:#fff}
 .leaflet-container{background:#0c1118!important}
 .leaflet-control-zoom{margin:8px!important}
 .leaflet-control-zoom a{background:var(--s2)!important;color:var(--t1)!important;border:1px solid var(--bd)!important;width:30px!important;height:30px!important;line-height:30px!important;font-size:16px!important}
@@ -239,12 +260,11 @@ header{
 
 /* Desktop overrides */
 @media(min-width:768px){
-  :root{--hh:56px;--bh:0px}
+  :root{--hh:56px;--ph:44px;--bh:0px}
   #map{bottom:0}
   .bnav{display:none}
-  /* Desktop sidebar */
   .ds{
-    position:fixed;top:var(--hh);left:0;bottom:0;z-index:1050;
+    position:fixed;top:calc(var(--hh) + var(--ph));left:0;bottom:0;z-index:1050;
     width:300px;background:var(--s1);border-right:1px solid var(--bd);
     display:flex;flex-direction:column;
     transform:translateX(0);transition:transform .28s ease;
@@ -264,6 +284,7 @@ header{
     background:var(--s2);border:1px solid var(--bd);border-left:none;
     border-radius:0 7px 7px 0;padding:.55rem .3rem;cursor:pointer;
     color:var(--t2);font-size:.75rem;transition:left .28s;
+    margin-top:calc((var(--ph)) / 2);
   }
   .dsb-toggle.shifted{left:0}
   .dsb-toggle:hover{background:var(--s3);color:var(--t1)}
@@ -313,6 +334,11 @@ header{
     <div class="sdrop" id="sdrop"></div>
   </div>
 </header>
+
+<!-- PILLS FILTER BAR -->
+<div class="pills-bar" id="pills-bar">
+  <div class="cpill todos active" id="pill-todos" onclick="pillSel(null)">Todos</div>
+</div>
 
 <!-- MAP -->
 <div id="map"></div>
@@ -857,6 +883,22 @@ function buildPU(m,bpm,ck,cpai){
 // ── Select CPAI ──
 function selCpai(key,doZoom){
   activeCpai=key;
+  // sync pill highlights
+  document.querySelectorAll('.cpill').forEach(p=>{
+    p.classList.remove('active');
+    p.style.background=''; p.style.borderColor=''; p.style.color='';
+  });
+  if(!key){
+    const t=document.getElementById('pill-todos');
+    if(t) t.classList.add('active');
+  } else {
+    const p=document.getElementById(`pill-${key}`);
+    if(p&&CPAIS[key]){
+      p.classList.add('active');
+      const cor=CPAIS[key].cor;
+      p.style.background=cor+'33'; p.style.borderColor=cor; p.style.color=cor;
+    }
+  }
   Object.entries(LAYERS).forEach(([k,lg])=>{
     lg.eachLayer(l=>{if(l._icon)l._icon.style.opacity=(!key||k===key)?'1':'0.07';});
   });
@@ -1128,10 +1170,51 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
+// ── PILLS ──
+function pillSel(key){
+  activeCpai=key;
+  // update pill styles
+  document.querySelectorAll('.cpill').forEach(p=>{
+    p.classList.remove('active');
+    p.style.background='';
+    p.style.borderColor='';
+    p.style.color='';
+  });
+  if(!key){
+    const t=document.getElementById('pill-todos');
+    if(t){t.classList.add('active');}
+  } else {
+    const p=document.getElementById(`pill-${key}`);
+    if(p){
+      p.classList.add('active');
+      const cor=CPAIS[key].cor;
+      p.style.background=cor+'33';
+      p.style.borderColor=cor;
+      p.style.color=cor;
+    }
+  }
+  selCpai(key, true);
+}
+
+function initPills(){
+  const bar=document.getElementById('pills-bar');
+  Object.entries(CPAIS).forEach(([k,cpai])=>{
+    const d=document.createElement('div');
+    d.className='cpill';
+    d.id=`pill-${k}`;
+    d.textContent=k;
+    d.style.borderColor=cpai.cor+'66';
+    d.style.color=cpai.cor;
+    d.onclick=()=>pillSel(k);
+    bar.appendChild(d);
+  });
+}
+
 // ════════════════════════════════════
 // INIT
 // ════════════════════════════════════
 (function init(){
+  initPills();
   let totBpm=0,totCid=0;
   Object.values(CPAIS).forEach(c=>{totBpm+=c.bpms.length;totCid+=c.bpms.reduce((s,b)=>s+b.muns.length,0);});
 
