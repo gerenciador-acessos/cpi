@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PMMA — Mapa CPI 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --bg:#0c1118;--s1:#161d27;--s2:#1e2633;--s3:#28303f;
+  --bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.05);
+  --t1:#e8f0fe;--t2:#8b9fc0;--t3:#4a5568;
+  --c1:#e8a020;--c2:#4fa8f5;--c3:#e05030;
+  --c4:#38b85a;--c5:#9b6ef5;--c6:#d4b830;
+  --c7:#28d090;--c8:#8a9ab8;
+  --hh:56px; /* header height */
+  --ph:44px; /* pills bar height */
+  --bh:54px; /* bottom bar height */
+  --green-wa:#25D366;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--t1)}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+
+/* ══ HEADER ══ */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:1100;
+  height:var(--hh);background:var(--s1);border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:.6rem;padding:0 .85rem;
+}
+.logo{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.logo-shield{
+  width:34px;height:34px;border-radius:7px;flex-shrink:0;
+  background:linear-gradient(145deg,#1b3d72,#0e2560);
+  border:1px solid rgba(100,160,255,.3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.logo-pm{font-size:.44rem;font-weight:900;color:#c8d8ff;letter-spacing:.1em;line-height:1.2}
+.logo-ma{font-size:.5rem;font-weight:900;color:#f0b030;letter-spacing:.08em}
+.logo-txt{display:flex;flex-direction:column}
+.logo-title{font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:800;letter-spacing:.04em;line-height:1.1}
+.logo-sub{font-size:.52rem;color:var(--t2);font-family:'JetBrains Mono',monospace;letter-spacing:.03em}
+/* Search */
+.sw{position:relative;flex:1;min-width:0}
+.si{
+  width:100%;background:var(--s2);border:1px solid var(--bd);
+  border-radius:8px;padding:.44rem .8rem .44rem 2rem;
+  color:var(--t1);font-family:'Barlow',sans-serif;font-size:.82rem;font-weight:500;
+  outline:none;transition:border-color .18s,box-shadow .18s;
+}
+.si:focus{border-color:rgba(79,168,245,.5);box-shadow:0 0 0 3px rgba(79,168,245,.1)}
+.si::placeholder{color:var(--t3)}
+.si-ico{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--t3);font-size:.82rem;pointer-events:none}
+.sdrop{
+  position:absolute;top:calc(100% + 5px);left:0;right:0;
+  background:var(--s2);border:1px solid var(--bd);border-radius:10px;
+  max-height:55vh;overflow-y:auto;z-index:4000;
+  box-shadow:0 16px 48px rgba(0,0,0,.7);display:none;
+}
+.sdrop.open{display:block}
+.sd-grp{padding:.32rem .8rem .15rem;font-size:.57rem;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--t3);background:var(--s1);position:sticky;top:0}
+.sd-item{display:flex;align-items:center;gap:.6rem;padding:.52rem .85rem;cursor:pointer;transition:background .1s}
+.sd-item:hover,.sd-item:active{background:var(--s3)}
+.sd-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.sd-main{flex:1;min-width:0}
+.sd-name{font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd-meta{font-size:.63rem;color:var(--t2);margin-top:.06rem;font-family:'JetBrains Mono',monospace}
+.sd-tag{font-size:.58rem;font-weight:700;padding:.16rem .48rem;border-radius:4px;font-family:'JetBrains Mono',monospace;white-space:nowrap;flex-shrink:0}
+.sd-empty{padding:1rem;text-align:center;color:var(--t3);font-size:.8rem}
+
+/* ══ MAP ══ */
+#map{
+  position:fixed;
+  top:calc(var(--hh) + var(--ph));left:0;right:0;
+  bottom:var(--bh);
+  z-index:1;
+}
+
+/* ══ PILLS BAR ══ */
+.pills-bar{
+  position:fixed;top:var(--hh);left:0;right:0;z-index:1090;
+  height:var(--ph);background:var(--s1);border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:.4rem;
+  padding:0 .85rem;overflow-x:auto;
+}
+.pills-bar::-webkit-scrollbar{display:none}
+.cpill{
+  flex-shrink:0;padding:.26rem .75rem;border-radius:20px;
+  font-size:.7rem;font-weight:700;cursor:pointer;
+  border:1.5px solid rgba(255,255,255,.18);
+  color:var(--t2);background:transparent;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;
+  transition:all .15s;white-space:nowrap;
+}
+.cpill.todos{border-color:rgba(255,255,255,.35);color:var(--t1)}
+.cpill.todos.active{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.6)}
+.cpill.active{color:#fff}
+.leaflet-container{background:#0c1118!important}
+.leaflet-control-zoom{margin:8px!important}
+.leaflet-control-zoom a{background:var(--s2)!important;color:var(--t1)!important;border:1px solid var(--bd)!important;width:30px!important;height:30px!important;line-height:30px!important;font-size:16px!important}
+.leaflet-control-zoom a:hover{background:var(--s3)!important}
+.leaflet-control-attribution{display:none!important}
+/* Popup */
+.leaflet-popup-content-wrapper{
+  background:var(--s1)!important;border:1px solid var(--bd)!important;
+  border-radius:14px!important;box-shadow:0 10px 40px rgba(0,0,0,.75)!important;
+  color:var(--t1)!important;padding:0!important;
+  max-width:310px!important;
+}
+.leaflet-popup-tip{background:var(--s1)!important}
+.leaflet-popup-close-button{color:var(--t2)!important;top:8px!important;right:10px!important;font-size:16px!important;z-index:10}
+.leaflet-popup-content{margin:0!important;width:auto!important}
+
+/* ══ POPUP CARD ══ */
+.pu{padding:13px 14px;min-width:230px}
+.pu-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.5rem;gap:.5rem}
+.pu-badges{display:flex;flex-wrap:wrap;gap:.3rem}
+.pu-badge{display:inline-block;padding:.18rem .55rem;border-radius:4px;font-size:.6rem;font-weight:800;font-family:'JetBrains Mono',monospace}
+.pu-city{font-size:1.05rem;font-weight:800;font-family:'Barlow Condensed',sans-serif;letter-spacing:.02em;line-height:1.1;margin-bottom:.1rem}
+.pu-type{font-size:.67rem;color:var(--t2);margin-bottom:.7rem}
+.pu-divider{height:1px;background:var(--bd2);margin:.55rem 0 .5rem}
+/* Commander card */
+.pu-cmt{background:var(--s2);border-radius:8px;padding:.6rem .75rem;margin-bottom:.5rem;border:1px solid var(--bd2)}
+.pu-cmt-role{font-size:.57rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--t3);margin-bottom:.25rem}
+.pu-cmt-name{font-size:.84rem;font-weight:700;margin-bottom:.4rem;line-height:1.2}
+.pu-cmt-phone{
+  display:flex;align-items:center;gap:.5rem;
+  background:var(--s3);border-radius:6px;padding:.4rem .6rem;
+  text-decoration:none;color:var(--t1);transition:background .15s;
+  font-size:.75rem;font-weight:600;font-family:'JetBrains Mono',monospace;
+}
+.pu-cmt-phone:hover,.pu-cmt-phone:active{background:#1a4f30}
+.pu-cmt-phone .wa{
+  background:var(--green-wa);border-radius:50%;width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;
+}
+.pu-row{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;padding:.14rem 0}
+.pu-l{color:var(--t2)}
+.pu-r{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:.67rem}
+
+/* ══ BOTTOM NAV ══ */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:1100;
+  height:var(--bh);background:var(--s1);border-top:1px solid var(--bd);
+  display:flex;align-items:stretch;
+}
+.bn-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.18rem;cursor:pointer;transition:background .12s;
+  border:none;background:transparent;color:var(--t2);padding:.4rem .2rem;
+  font-family:'Barlow',sans-serif;
+}
+.bn-btn:active{background:var(--s2)}
+.bn-btn.active{color:var(--c2)}
+.bn-ico{font-size:1.1rem;line-height:1}
+.bn-lbl{font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+
+/* ══ PANEL (slide-up on mobile) ══ */
+.panel-overlay{
+  position:fixed;inset:0;z-index:1200;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(3px);
+  display:none;opacity:0;transition:opacity .25s;
+}
+.panel-overlay.show{display:block;opacity:1}
+.panel{
+  position:fixed;bottom:var(--bh);left:0;right:0;z-index:1300;
+  background:var(--s1);border-top:1px solid var(--bd);
+  border-radius:18px 18px 0 0;
+  max-height:80vh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+.panel.show{transform:translateY(0)}
+.panel-handle{width:36px;height:4px;background:var(--t3);border-radius:2px;margin:.75rem auto .4rem;flex-shrink:0}
+.panel-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.5rem 1rem .65rem;border-bottom:1px solid var(--bd);flex-shrink:0;
+}
+.panel-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.04em}
+.panel-close{background:var(--s2);border:1px solid var(--bd);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;color:var(--t2);flex-shrink:0}
+.panel-scroll{overflow-y:auto;flex:1;padding-bottom:1rem}
+
+/* CPAI card */
+.cpai-card{
+  margin:.55rem .85rem 0;
+  background:var(--s2);border-radius:10px;border:1px solid var(--bd2);overflow:hidden;
+}
+.cpai-hd{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.65rem .85rem;cursor:pointer;transition:background .12s;
+}
+.cpai-hd:active{background:var(--s3)}
+.cpai-stripe{width:3px;height:22px;border-radius:2px;flex-shrink:0}
+.cpai-name{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:900;letter-spacing:.04em;flex:1}
+.cpai-counts{display:flex;gap:.35rem}
+.cpai-cnt{font-size:.58rem;font-weight:700;padding:.14rem .45rem;border-radius:4px;font-family:'JetBrains Mono',monospace}
+.cpai-arr{font-size:.65rem;color:var(--t3);transition:transform .2s;flex-shrink:0}
+.cpai-arr.open{transform:rotate(90deg)}
+.cpai-body{display:none;border-top:1px solid var(--bd2)}
+.cpai-body.open{display:block}
+
+/* BPM row */
+.bpm-row{
+  display:flex;align-items:center;gap:.55rem;
+  padding:.5rem .85rem .5rem 1.2rem;cursor:pointer;
+  border-top:1px solid var(--bd2);transition:background .12s;
+}
+.bpm-row:first-child{border-top:none}
+.bpm-row:active{background:var(--s3)}
+.bpm-bullet{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.bpm-info{flex:1;min-width:0}
+.bpm-num{font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:800;letter-spacing:.03em}
+.bpm-sede{font-size:.62rem;color:var(--t2);font-family:'JetBrains Mono',monospace;margin-top:.05rem}
+.bpm-cmt-mini{font-size:.6rem;color:var(--t3);margin-top:.03rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bpm-cnt{font-size:.6rem;font-weight:700;padding:.12rem .42rem;border-radius:4px;font-family:'JetBrains Mono',monospace}
+
+/* City list inside BPM */
+.city-sub{background:var(--bg);border-top:1px solid var(--bd2);padding:.35rem .6rem .45rem 1.6rem;display:none}
+.city-sub.open{display:block}
+.city-sub-item{
+  display:flex;align-items:center;gap:.4rem;
+  padding:.28rem .3rem;border-radius:5px;cursor:pointer;transition:background .1s;
+}
+.city-sub-item:active{background:var(--s3)}
+.city-sub-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.city-sub-name{font-size:.75rem;flex:1}
+.city-sub-name.sede-name{font-weight:700}
+.city-sede-lbl{font-size:.5rem;font-weight:700;padding:.08rem .3rem;border-radius:3px;font-family:'JetBrains Mono',monospace}
+
+/* ══ LEGEND PANEL ══ */
+.leg-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem 1rem;padding:.8rem 1rem}
+.leg-item{display:flex;align-items:center;gap:.5rem;font-size:.72rem;font-family:'JetBrains Mono',monospace}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ══ FILTER PILLS (inside panel) ══ */
+.filter-pills{display:flex;flex-wrap:wrap;gap:.4rem;padding:.6rem .85rem}
+.fpill{
+  padding:.32rem .75rem;border-radius:20px;font-size:.68rem;font-weight:700;
+  cursor:pointer;border:1.5px solid transparent;transition:all .15s;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;
+  background:var(--s2);color:var(--t2);
+}
+
+/* ══ STATS BAR (inside panel) ══ */
+.stats-row{display:flex;gap:.5rem;padding:.4rem .85rem .6rem;border-bottom:1px solid var(--bd2)}
+.sbox{flex:1;background:var(--s2);border-radius:8px;padding:.45rem .5rem;text-align:center}
+.sbox-n{font-size:1.1rem;font-weight:800;line-height:1;font-family:'Barlow Condensed',sans-serif}
+.sbox-l{font-size:.52rem;color:var(--t2);text-transform:uppercase;letter-spacing:.08em;margin-top:.1rem}
+
+/* ══ TOAST ══ */
+.toast{
+  position:fixed;bottom:calc(var(--bh) + .8rem);left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--s3);border:1px solid var(--bd);border-radius:8px;
+  padding:.55rem 1rem;font-size:.78rem;font-weight:600;
+  z-index:2000;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Desktop overrides */
+@media(min-width:768px){
+  :root{--hh:56px;--ph:44px;--bh:0px}
+  #map{bottom:0}
+  .bnav{display:none}
+  .ds{
+    position:fixed;top:calc(var(--hh) + var(--ph));left:0;bottom:0;z-index:1050;
+    width:300px;background:var(--s1);border-right:1px solid var(--bd);
+    display:flex;flex-direction:column;
+    transform:translateX(0);transition:transform .28s ease;
+  }
+  .ds.hidden{transform:translateX(-100%)}
+  .ds-hd{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:.65rem 1rem;border-bottom:1px solid var(--bd);flex-shrink:0;
+    font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--t2);
+  }
+  .ds-scroll{overflow-y:auto;flex:1;padding-bottom:1rem}
+  .ds-stats{display:flex;gap:.45rem;padding:.6rem .85rem;border-bottom:1px solid var(--bd2);flex-shrink:0}
+  #map{left:300px}
+  #map.full{left:0}
+  .dsb-toggle{
+    position:fixed;top:50%;left:300px;transform:translateY(-50%);z-index:1060;
+    background:var(--s2);border:1px solid var(--bd);border-left:none;
+    border-radius:0 7px 7px 0;padding:.55rem .3rem;cursor:pointer;
+    color:var(--t2);font-size:.75rem;transition:left .28s;
+    margin-top:calc((var(--ph)) / 2);
+  }
+  .dsb-toggle.shifted{left:0}
+  .dsb-toggle:hover{background:var(--s3);color:var(--t1)}
+  /* Desktop legend */
+  .dleg{
+    position:fixed;bottom:1rem;left:315px;z-index:1000;
+    background:rgba(12,17,24,.93);backdrop-filter:blur(10px);
+    border:1px solid var(--bd);border-radius:10px;
+    padding:.65rem .85rem;transition:left .28s;
+  }
+  .dleg.shifted{left:15px}
+  .dleg-hd{font-size:.57rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--t2);margin-bottom:.4rem}
+  .dleg .leg-grid{grid-template-columns:1fr 1fr;padding:0;gap:.2rem .8rem}
+  .dleg .leg-item{font-size:.63rem}
+  /* Desktop info overlay */
+  .diov{
+    position:fixed;bottom:1rem;right:1rem;z-index:1000;
+    background:rgba(12,17,24,.93);backdrop-filter:blur(10px);
+    border:1px solid var(--bd);border-radius:10px;
+    padding:.75rem 1rem;min-width:190px;font-size:.72rem;
+  }
+  .diov-title{font-weight:800;font-size:.8rem;margin-bottom:.5rem;font-family:'Barlow Condensed',sans-serif}
+  .diov-row{display:flex;justify-content:space-between;gap:1.5rem;padding:.14rem 0}
+  .diov-l{color:var(--t2)}
+  .diov-r{font-family:'JetBrains Mono',monospace;font-weight:600}
+  /* mobile-only elements hidden on desktop */
+  .panel-overlay,.panel,.bnav{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-shield">
+      <div class="logo-pm">PMMA</div>
+    </div>
+    <div class="logo-txt">
+      <div class="logo-title">PMMA · CPI 2026</div>
+      <div class="logo-sub" id="hdr-sub">Mapa Interativo</div>
+    </div>
+  </div>
+  <div class="sw">
+    <span class="si-ico">🔍</span>
+    <input class="si" id="si" placeholder="Cidade, BPM, CPAI…" autocomplete="off" spellcheck="false">
+    <div class="sdrop" id="sdrop"></div>
+  </div>
+</header>
+
+<!-- PILLS FILTER BAR -->
+<div class="pills-bar" id="pills-bar">
+  <div class="cpill todos active" id="pill-todos" onclick="pillSel(null)">Todos</div>
+</div>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bnav">
+  <button class="bn-btn active" id="bn-map" onclick="mobileNav('map')">
+    <span class="bn-ico">🗺️</span><span class="bn-lbl">Mapa</span>
+  </button>
+  <button class="bn-btn" id="bn-cpai" onclick="mobileNav('cpai')">
+    <span class="bn-ico">🏛️</span><span class="bn-lbl">CPAIs</span>
+  </button>
+  <button class="bn-btn" id="bn-bpm" onclick="mobileNav('bpm')">
+    <span class="bn-ico">🔰</span><span class="bn-lbl">BPMs</span>
+  </button>
+  <button class="bn-btn" id="bn-leg" onclick="mobileNav('leg')">
+    <span class="bn-ico">🎨</span><span class="bn-lbl">Legenda</span>
+  </button>
+</nav>
+
+<!-- MOBILE PANEL -->
+<div class="panel-overlay" id="overlay" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="panel-handle"></div>
+  <div class="panel-hd">
+    <div class="panel-title" id="panel-title">CPAIs</div>
+    <div class="panel-close" onclick="closePanel()">✕</div>
+  </div>
+  <div class="panel-scroll" id="panel-scroll"></div>
+</div>
+
+<!-- DESKTOP SIDEBAR -->
+<div class="ds" id="ds">
+  <div class="ds-hd">
+    <span>Estrutura CPI / PMMA</span>
+    <span id="ds-info" style="font-family:'JetBrains Mono',monospace;color:var(--t3);font-size:.58rem"></span>
+  </div>
+  <div class="ds-stats" id="ds-stats"></div>
+  <div class="ds-scroll" id="ds-scroll"></div>
+</div>
+<button class="dsb-toggle" id="dsb-toggle" onclick="toggleDS()">◀</button>
+
+<!-- DESKTOP LEGEND -->
+<div class="dleg" id="dleg">
+  <div class="dleg-hd">Legenda — CPAIs</div>
+  <div class="leg-grid" id="dleg-grid"></div>
+</div>
+
+<!-- DESKTOP INFO OVERLAY -->
+<div class="diov" id="diov">
+  <div class="diov-title" id="diov-title">📊 CPI — PMMA 2026</div>
+  <div class="diov-row"><span class="diov-l">Total CPAIs</span><span class="diov-r">8</span></div>
+  <div class="diov-row"><span class="diov-l">Total BPMs</span><span class="diov-r" id="diov-bpm">—</span></div>
+  <div class="diov-row"><span class="diov-l">Municípios</span><span class="diov-r" id="diov-cid">—</span></div>
+  <div class="diov-row" id="diov-sel" style="display:none;border-top:1px solid var(--bd2);margin-top:.35rem;padding-top:.35rem">
+    <span class="diov-l">Filtro</span><span class="diov-r" id="diov-sel-v" style="font-size:.65rem">—</span>
+  </div>
+</div>
+
+<!-- SHEET STATUS -->
+<div id="sheet-status" style="
+  position:fixed;bottom:calc(var(--bh) + 6px);right:8px;z-index:2000;
+  font-size:.58rem;font-family:'JetBrains Mono',monospace;
+  padding:.22rem .55rem;border-radius:5px;
+  background:rgba(14,20,30,.88);border:1px solid rgba(255,255,255,.1);
+  color:var(--t3);pointer-events:none;display:none;
+  backdrop-filter:blur(4px);
+"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// GOOGLE SHEETS — integração dinâmica
+// A planilha precisa estar compartilhada como
+// "Qualquer pessoa com o link pode visualizar"
+// ════════════════════════════════════════════════
+const SHEET_ID   = '1ALAYTygaqjXh7_dbYM7zmf7ddzIw14ESYSe6TDcG8iw';
+// Aba "DO CPI" — GID visível na URL da planilha
+const SHEET_GID  = '185014483';
+const SHEET_CSV  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
+const REFRESH_MS = 5 * 60 * 1000; // atualiza a cada 5 minutos
+
+// ── Normaliza string para comparação robusta ──
+// Remove: acentos, (SEDE), preposições, sufixo "do MA / do Maranhão"
+function normName(s){
+  return (s||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')   // tira acentos
+    .replace(/\([^)]*\)/g,' ')                          // remove (SEDE) (SEDE DO X BPM) etc
+    .replace(/\bdo maranhao\b|\bde maranhao\b|\bdo ma\b|\bde ma\b/g,' ')
+    .replace(/\b(de|do|da|dos|das|em|no|na|nos|nas)\b/g,' ')
+    .replace(/[^a-z0-9\s]/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+
+// ── Parser CSV robusto (lida com aspas e vírgulas em campos) ──
+function parseCSV(text){
+  const rows=[];
+  let cur='', inQ=false, cells=[];
+  for(let i=0;i<=text.length;i++){
+    const c=text[i];
+    if(i===text.length||(( c==='\n'||c==='\r')&&!inQ)){
+      cells.push(cur.trim().replace(/^"|"$/g,''));
+      if(cells.some(x=>x)) rows.push([...cells]);
+      cells=[]; cur='';
+      if(c==='\r'&&text[i+1]==='\n') i++;
+    } else if(c==='"'){ inQ=!inQ; }
+    else if(c===','&&!inQ){ cells.push(cur.trim().replace(/^"|"$/g,'')); cur=''; }
+    else cur+=c;
+  }
+  return rows;
+}
+
+// ── Indicador de status (canto inferior direito) ──
+function setSheetStatus(msg, cor){
+  const el=document.getElementById('sheet-status');
+  if(!el) return;
+  el.textContent=msg;
+  el.style.color=cor||'var(--t3)';
+  el.style.display='block';
+}
+
+// ── Reconstrói todos os markers com dados atualizados ──
+function rebuildMarkers(){
+  // Remove layers existentes
+  Object.values(LAYERS).forEach(lg=>{ map.removeLayer(lg); });
+  Object.keys(LAYERS).forEach(k=>delete LAYERS[k]);
+  ALL_PINS.length=0;
+  // Reconstrói
+  buildMarkers();
+  // Atualiza sidebar desktop
+  const scroll=document.getElementById('ds-scroll');
+  if(scroll) buildCpaiList(scroll);
+}
+
+// ── Carrega e aplica dados da aba "DO CPI" ──
+async function loadSheet(){
+  setSheetStatus('⟳ Atualizando…','var(--t3)');
+  try{
+    const resp = await fetch(SHEET_CSV + '&t=' + Date.now());
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const rows = parseCSV(text);
+    if(rows.length < 6) throw new Error('planilha vazia');
+
+    // ── Estrutura da aba "DO CPI" (conforme imagem):
+    //   Linhas 1-4: cabeçalho visual / logo / título / sub-headers
+    //   Linha 5 (idx 4): headers — col A=UPM, B=SEDE/MUNICÍPIO,
+    //                    C=COMANDANTE, D=CONTATO, E=SUBCOMANDANTE,
+    //                    F=CONTATO(sub), G=P1, H=CONTATO(P1), …
+    //   Linha 6+: dados
+    //
+    // Detecta a linha de header buscando "COMANDANTE"
+    let dataStart = 5; // default: pula 5 linhas (linha 6 em diante)
+    for(let r=0;r<Math.min(8,rows.length);r++){
+      const row=rows[r].map(c=>normName(c));
+      if(row.findIndex(c=>c==='comandante')>=0){ dataStart=r+1; break; }
+    }
+
+    // Índices fixos conforme estrutura observada na planilha
+    const COL_MUN=1, COL_CMT=2, COL_TEL=3;
+    const COL_SUBCMT=4, COL_SUBTEL=5;
+    // Efetivo operacional total ~col P(15), viaturas prontas ~col T(19), escala ~col V(21)
+    const COL_EF_TOT=15, COL_VTR=19, COL_ESC=21;
+
+    // ── Monta lookup: nome_normalizado → dados ──
+    const lookup={};
+    for(let r=dataStart;r<rows.length;r++){
+      const row=rows[r];
+      const name=(row[COL_MUN]||'').trim();
+      // Ignora linhas de total, linhas vazias e cabeçalhos repetidos
+      if(!name) continue;
+      const normN=normName(name);
+      if(normN.startsWith('total')||normN==='sede municipio'||normN==='upmsede municipio') continue;
+      const cmt=(row[COL_CMT]||'').trim();
+      const tel=(row[COL_TEL]||'').trim();
+      if(!cmt) continue;
+      lookup[normN]={
+        cmt, tel,
+        subcmt: (row[COL_SUBCMT]||'').trim(),
+        subtel: (row[COL_SUBTEL]||'').trim(),
+        efTot:  (row[COL_EF_TOT]||'').trim(),
+        vtr:    (row[COL_VTR]   ||'').trim(),
+        esc:    (row[COL_ESC]   ||'').trim(),
+      };
+    }
+
+    if(!Object.keys(lookup).length)
+      throw new Error('nenhum dado — verifique se a planilha está pública (Compartilhar → Qualquer pessoa com o link)');
+
+    // ── Aplica ao CPAIS ──
+    let updated=0;
+    Object.values(CPAIS).forEach(cpai=>{
+      cpai.bpms.forEach(bpm=>{
+        bpm.muns.forEach(m=>{
+          const hit=lookup[normName(m.n)];
+          if(hit){ m.cmt=hit.cmt; m.tel=hit.tel; m._sheet=hit; updated++; }
+        });
+        // Sincroniza comandante do BPM com a sede
+        const sede=bpm.muns.find(m=>m.s);
+        if(sede){ bpm.cmt=sede.cmt; bpm.tel=sede.tel; }
+      });
+    });
+
+    rebuildMarkers();
+    const hora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    setSheetStatus(`✓ Planilha · ${hora}  (${updated} atualizados)`, '#38b85a');
+  } catch(e){
+    setSheetStatus(`⚠ Offline · dados locais`, '#e8a020');
+    console.warn('[mapa_cpi] loadSheet:', e.message);
+  }
+}
+
+// ════════════════════════════════════════════════
+// DADOS COMPLETOS — PDF PMMA 2022/2026
+// Quadro Demonstrativo Operacional CPI
+// Campos: num, sede, cmt (comandante), tel (telefone), municípios[]
+// ════════════════════════════════════════════════
+const CPAIS = {
+"CPAI-1":{cor:"#e8a020",bpms:[
+  {num:"15°BPM",sede:"Bacabal",lat:-4.2234,lng:-44.7856,
+   cmt:"TC QOPM Leila",tel:"(99) 98103-6565",
+   muns:[
+    {n:"Bacabal",s:true,lat:-4.2234,lng:-44.7856,cmt:"TC QOPM Leila",tel:"(99) 98103-6565"},
+    {n:"Conceição do Lago-Açu",s:false,lat:-3.7167,lng:-45.0833,cmt:"1° SGT PM Gilberto",tel:"(98) 98509-4478"},
+    {n:"Lago Verde",s:false,lat:-4.2000,lng:-44.6500,cmt:"1° SGT 201/01 Lago",tel:"(98) 98802-1547"},
+    {n:"Olho d'Água das Cunhãs",s:false,lat:-3.9500,lng:-45.1833,cmt:"1° SGT PM 196/92 Soares",tel:"(99) 98191-1764"},
+    {n:"São Luís Gonzaga do MA",s:false,lat:-3.2500,lng:-44.7167,cmt:"2° SGT 005/01 Nadison",tel:"(99) 98112-8872"},
+  ]},
+  {num:"19°BPM",sede:"Pedreiras",lat:-4.5678,lng:-44.6003,
+   cmt:"TEN CEL QOPM Brandão",tel:"(98) 98181-9383",
+   muns:[
+    {n:"Pedreiras",s:true,lat:-4.5678,lng:-44.6003,cmt:"TEN CEL QOPM Brandão",tel:"(98) 98181-9383"},
+    {n:"Bernardo do Mearim",s:false,lat:-4.6500,lng:-45.0200,cmt:"CB PM 854/14 Calaça",tel:"(99) 98418-8864"},
+    {n:"Esperantinópolis",s:false,lat:-4.8667,lng:-44.8833,cmt:"1° TEN QOPM Silva Filho",tel:"(99) 98489-7902"},
+    {n:"Igarapé Grande",s:false,lat:-4.7000,lng:-44.7833,cmt:"2° TEN QOPM Dorneles",tel:"(98) 98210-6698"},
+    {n:"Trizidela do Vale",s:false,lat:-4.3167,lng:-44.9167,cmt:"CAP QOPM Fraga",tel:"(98) 98256-7691"},
+    {n:"Lima Campos",s:false,lat:-4.0333,lng:-44.4500,cmt:"1° SGT PM 181/92 J. Morais",tel:"(99) 98405-5646"},
+    {n:"Porção de Pedras",s:false,lat:-4.6167,lng:-44.5500,cmt:"2° TEN QOPM Dorneles",tel:"(98) 98210-6698"},
+  ]},
+  {num:"23°BPM",sede:"São Mateus do Maranhão",lat:-4.0458,lng:-44.4072,
+   cmt:"TEN CEL QOPM Hamilton",tel:"(99) 98121-5583",
+   muns:[
+    {n:"São Mateus do Maranhão",s:true,lat:-4.0458,lng:-44.4072,cmt:"TEN CEL QOPM Hamilton",tel:"(99) 98121-5583"},
+    {n:"Miranda do Norte",s:false,lat:-3.1000,lng:-44.5667,cmt:"1° TEN QOPM Castro",tel:"(98) 98863-9673"},
+    {n:"Matões do Norte",s:false,lat:-3.5833,lng:-44.9667,cmt:"1° TEN QOPM Castro",tel:"(98) 98863-9673"},
+    {n:"Pirapemas",s:false,lat:-3.7167,lng:-44.1000,cmt:"1° TEN QOAPM Leudimar",tel:"(98) 98482-3900"},
+    {n:"Cantanhede",s:false,lat:-3.6167,lng:-44.3833,cmt:"1° TEN QOAPM Leudimar",tel:"(98) 98482-3900"},
+    {n:"Alto Alegre do Maranhão",s:false,lat:-4.1167,lng:-44.8333,cmt:"CAP QOAPM José Antônio",tel:"(99) 98837-7621"},
+  ]},
+  {num:"39°BPM",sede:"Lago da Pedra",lat:-4.7167,lng:-45.2167,
+   cmt:"TEN CEL QOPM Aurélio",tel:"(99) 98124-5864",
+   muns:[
+    {n:"Lago da Pedra",s:true,lat:-4.7167,lng:-45.2167,cmt:"TEN CEL QOPM Aurélio",tel:"(99) 98124-5864"},
+    {n:"Altamira do Maranhão",s:false,lat:-4.7667,lng:-45.5167,cmt:"1° SGT Mendonça",tel:"(99) 98134-6711"},
+    {n:"Bom Lugar",s:false,lat:-4.2667,lng:-45.0833,cmt:"3° SGT PM 540/94 Trindade",tel:"(99) 98158-6696"},
+    {n:"Brejo de Areia",s:false,lat:-4.4667,lng:-45.3167,cmt:"2° SGT Edmilson",tel:"(99) 99199-6707"},
+    {n:"Lago do Junco",s:false,lat:-4.0300,lng:-44.7500,cmt:"1° SGT França",tel:"(99) 98168-7673"},
+    {n:"Lago dos Rodrigues",s:false,lat:-4.0500,lng:-44.7200,cmt:"1° TEN Jansen",tel:"(86) 98828-9046"},
+    {n:"Lagoa Grande do Maranhão",s:false,lat:-4.9167,lng:-44.7667,cmt:"3° SGT PM 391/94 Adogivan",tel:"(99) 98438-4289"},
+    {n:"Marajá do Sena",s:false,lat:-3.6500,lng:-45.2167,cmt:"Sub TEN Torres",tel:"(99) 98493-4262"},
+    {n:"Paulo Ramos",s:false,lat:-4.3783,lng:-45.1747,cmt:"1° SGT PM 479/89 Amarildo",tel:"(99) 98415-4251"},
+    {n:"Vitorino Freire",s:false,lat:-4.3333,lng:-45.2333,cmt:"CAP Farias",tel:"(98) 98828-0111"},
+  ]},
+]},
+
+"CPAI-2":{cor:"#4fa8f5",bpms:[
+  {num:"5°BPM",sede:"Barra do Corda",lat:-5.5042,lng:-45.2553,
+   cmt:"MAJOR QOPM Wellington",tel:"(99) 98521-6359",
+   muns:[
+    {n:"Barra do Corda",s:true,lat:-5.5042,lng:-45.2553,cmt:"MAJOR QOPM Wellington",tel:"(99) 98521-6359"},
+    {n:"Fernando Falcão",s:false,lat:-6.1000,lng:-46.2833,cmt:"2° SGT PM 1059/93 Amaral",tel:"(99) 98530-6407"},
+    {n:"Itaipava do Grajaú",s:false,lat:-5.4667,lng:-46.0833,cmt:"2° SGT PM 159/16 Bastos",tel:"(99) 98447-8916"},
+    {n:"Jenipapo dos Vieiras",s:false,lat:-5.5500,lng:-45.8167,cmt:"CB PM 138/16 Ricardo",tel:"(99) 98808-9190"},
+    {n:"São R. do Doca Bezerra",s:false,lat:-5.4500,lng:-45.5500,cmt:"CB PM 349/10 Ernandes",tel:"(99) 98460-2074"},
+    {n:"São Roberto",s:false,lat:-5.6333,lng:-45.0667,cmt:"3° SGT PM 623/07 Andrade",tel:"(99) 98484-5606"},
+  ]},
+  {num:"18°BPM",sede:"Presidente Dutra",lat:-5.2972,lng:-44.4861,
+   cmt:"TC QOPM Flávio",tel:"(99) 98299-6909",
+   muns:[
+    {n:"Presidente Dutra",s:true,lat:-5.2972,lng:-44.4861,cmt:"TC QOPM Flávio",tel:"(99) 98299-6909"},
+    {n:"Capinzal do Norte",s:false,lat:-4.9500,lng:-44.1833,cmt:"3° SGT PM Alberto",tel:"(99) 98166-1607"},
+    {n:"Dom Pedro",s:false,lat:-5.0333,lng:-44.4500,cmt:"Sub TEN PM Martins",tel:"(99) 98121-7014"},
+    {n:"Gonçalves Dias",s:false,lat:-4.5667,lng:-44.7333,cmt:"2° SGT Jonas",tel:"(86) 98874-6392"},
+    {n:"Governador Archer",s:false,lat:-4.8333,lng:-44.6333,cmt:"3° SGT PM Aleilson",tel:"(99) 99106-0155"},
+    {n:"Governador Eugênio Barros",s:false,lat:-5.1667,lng:-44.5833,cmt:"CAP QOEPM Gesse",tel:"(99) 98115-5505"},
+    {n:"Governador Luiz Rocha",s:false,lat:-5.4500,lng:-44.6333,cmt:"CB PM Marcos",tel:"(86) 99916-0820"},
+    {n:"Graça Aranha",s:false,lat:-4.7667,lng:-44.4333,cmt:"CB PM Adriano",tel:"(99) 99148-9276"},
+    {n:"Santa Filomena do MA",s:false,lat:-5.0833,lng:-44.2667,cmt:"3° SGT S. Oliveira",tel:"(99) 98105-0548"},
+    {n:"Santo Antônio dos Lopes",s:false,lat:-4.8833,lng:-44.8667,cmt:"2° TEN QOPM Victor",tel:"(86) 99822-1083"},
+    {n:"São Domingos do Maranhão",s:false,lat:-5.5775,lng:-44.3825,cmt:"3° SGT Leonardo",tel:"(99) 98121-7014"},
+    {n:"São José dos Basílios",s:false,lat:-4.6667,lng:-44.5167,cmt:"CB PM Brandão",tel:"(99) 98429-9756"},
+    {n:"Senador Alexandre Costa",s:false,lat:-4.7833,lng:-44.0000,cmt:"3° SGT PM R Cunha",tel:"(86) 99428-1235"},
+    {n:"Tuntum",s:false,lat:-5.2667,lng:-44.6500,cmt:"CAP QOPM Negreiro",tel:"(98) 99916-3563"},
+    {n:"Joselândia",s:false,lat:-5.5167,lng:-44.8000,cmt:"CB PM Brandão",tel:"(99) 98429-9756"},
+  ]},
+  {num:"33°BPM",sede:"Colinas",lat:-6.0219,lng:-44.2597,
+   cmt:"MAJOR QOPM Aécyo",tel:"(99) 99153-6386",
+   muns:[
+    {n:"Colinas",s:true,lat:-6.0219,lng:-44.2597,cmt:"MAJOR QOPM Aécyo",tel:"(99) 99153-6386"},
+    {n:"Buriti Bravo",s:false,lat:-5.8333,lng:-43.8333,cmt:"1° TEN QOPM Brayan",tel:"(99) 99251-4579"},
+    {n:"Fortuna",s:false,lat:-5.2167,lng:-42.7167,cmt:"2° SGT PM Dias",tel:"(86) 99908-6690"},
+    {n:"Jatobá",s:false,lat:-5.5833,lng:-43.7833,cmt:"CB PM Tomaz",tel:"(86) 99547-0316"},
+    {n:"Mirador",s:false,lat:-6.3703,lng:-44.3628,cmt:"SD PM Barbosa",tel:"(98) 98771-7929"},
+    {n:"Sucupira do Norte",s:false,lat:-6.4833,lng:-44.1833,cmt:"ST PM F Lima",tel:"(99) 99132-2592"},
+  ]},
+  {num:"37°BPM",sede:"Grajaú",lat:-5.8200,lng:-46.1400,
+   cmt:"TC QOPM Leandro",tel:"(99) 98521-6420",
+   muns:[
+    {n:"Grajaú",s:true,lat:-5.8200,lng:-46.1400,cmt:"TC QOPM Leandro",tel:"(99) 98521-6420"},
+    {n:"Arame",s:false,lat:-4.9022,lng:-46.1017,cmt:"1° TEN Nunes",tel:"(98) 99818-8234"},
+    {n:"Formosa da Serra Negra",s:false,lat:-6.7833,lng:-45.9667,cmt:"3° SGT PM Joelson",tel:"(99) 98407-0721"},
+  ]},
+]},
+
+"CPAI-3":{cor:"#e05030",bpms:[
+  {num:"3°BPM",sede:"Imperatriz",lat:-5.5261,lng:-47.4917,
+   cmt:"TEN CEL QOPM Héldio",tel:"(98) 99221-9631",
+   muns:[
+    {n:"Imperatriz",s:true,lat:-5.5261,lng:-47.4917,cmt:"TEN CEL QOPM Héldio",tel:"(98) 99221-9631"},
+    {n:"Governador Edson Lobão",s:false,lat:-5.3167,lng:-47.0000,cmt:"1° TEN QOPM Caio",tel:"(98) 98447-8398"},
+  ]},
+  {num:"12°BPM",sede:"Estreito",lat:-6.5500,lng:-47.4500,
+   cmt:"TEN CEL QOPM Luna",tel:"(99) 98119-6412",
+   muns:[
+    {n:"Estreito",s:true,lat:-6.5500,lng:-47.4500,cmt:"TEN CEL QOPM Luna",tel:"(99) 98119-6412"},
+    {n:"Campestre do Maranhão",s:false,lat:-5.3000,lng:-46.0667,cmt:"3° SGT PM 287/17 Evaldo",tel:"(99) 98837-9712"},
+    {n:"Carolina",s:false,lat:-7.3333,lng:-47.4667,cmt:"1° TEN QOPM Machado",tel:"(98) 98110-0394"},
+    {n:"Lajeado Novo",s:false,lat:-5.0667,lng:-46.0167,cmt:"CB PM 550/14 Barbosa",tel:"(99) 99100-0232"},
+    {n:"Porto Franco",s:false,lat:-6.3333,lng:-47.4000,cmt:"2° TEN QOAPM Vale Filho",tel:"(99) 99161-4972"},
+    {n:"Ribamar Fiquene",s:false,lat:-5.9000,lng:-47.3333,cmt:"3° SGT PM 220/01 Charles",tel:"(99) 99162-1913"},
+    {n:"São João do Paraíso",s:false,lat:-6.0500,lng:-47.5000,cmt:"3° SGT PM 993/07 Alves",tel:"(99) 98421-1420"},
+  ]},
+  {num:"14°BPM",sede:"Imperatriz",lat:-5.5100,lng:-47.5100,
+   cmt:"TC QOPM Sérgio",tel:"(99) 99125-2808",
+   muns:[
+    {n:"Imperatriz (14°BPM)",s:true,lat:-5.5100,lng:-47.5100,cmt:"TC QOPM Sérgio",tel:"(99) 99125-2808"},
+    {n:"Davinópolis",s:false,lat:-5.2000,lng:-47.4833,cmt:"1° TEN QOPM Claudio",tel:"(98) 98284-2039"},
+    {n:"João Lisboa",s:false,lat:-5.4333,lng:-47.4167,cmt:"Sub Tenente Correa",tel:"(99) 99158-2190"},
+    {n:"Senador La Rocque",s:false,lat:-5.4167,lng:-47.4667,cmt:"2° TEN QOAPM Sergio",tel:"(99) 99210-3313"},
+  ]},
+  {num:"26°BPM",sede:"Açailândia",lat:-4.9469,lng:-47.5000,
+   cmt:"MAJ QOPM Lima",tel:"(99) 98141-1436",
+   muns:[
+    {n:"Açailândia",s:true,lat:-4.9469,lng:-47.5000,cmt:"MAJ QOPM Lima",tel:"(99) 98141-1436"},
+    {n:"Itinga do Maranhão",s:false,lat:-4.4333,lng:-47.4833,cmt:"SGT Uendice",tel:"—"},
+  ]},
+  {num:"30°BPM",sede:"Buriticupu",lat:-4.3167,lng:-46.4333,
+   cmt:"TEN CEL QOPM Nelson",tel:"(99) 98115-5145",
+   muns:[
+    {n:"Buriticupu",s:true,lat:-4.3167,lng:-46.4333,cmt:"TEN CEL QOPM Nelson",tel:"(99) 98115-5145"},
+    {n:"Bom Jesus das Selvas",s:false,lat:-3.9500,lng:-45.8000,cmt:"2° SGT PM 245/94 Mozenam",tel:"(99) 99156-7552"},
+  ]},
+  {num:"32°BPM",sede:"Cidelândia",lat:-5.1000,lng:-47.7333,
+   cmt:"TC QOPM Janilson",tel:"(99) 98123-8280",
+   muns:[
+    {n:"Cidelândia",s:true,lat:-5.1000,lng:-47.7333,cmt:"TC QOPM Janilson",tel:"(99) 98123-8280"},
+    {n:"São Francisco do Brejão",s:false,lat:-5.1000,lng:-47.3000,cmt:"3° SGT PM 011/07 Christiano",tel:"(99) 99116-8964"},
+    {n:"São Pedro da Água Branca",s:false,lat:-5.1333,lng:-47.9667,cmt:"3° SGT PM 341/02",tel:"(99) 99122-1884"},
+    {n:"Vila Nova dos Martírios",s:false,lat:-5.4167,lng:-47.1167,cmt:"3° SGT PM 882/14 Mesquita",tel:"(99) 99147-4240"},
+  ]},
+  {num:"34°BPM",sede:"Amarante do MA",lat:-5.5667,lng:-46.7500,
+   cmt:"TEN CEL QOPM Claudiney",tel:"(99) 99111-9785",
+   muns:[
+    {n:"Amarante do Maranhão",s:true,lat:-5.5667,lng:-46.7500,cmt:"TEN CEL QOPM Claudiney",tel:"(99) 99111-9785"},
+    {n:"Buritirana",s:false,lat:-5.7833,lng:-46.6333,cmt:"1° TEN QOPM Almeida",tel:"(98) 99114-8990"},
+    {n:"Montes Altos",s:false,lat:-5.8333,lng:-47.0667,cmt:"3° SGT PM Honorio",tel:"(99) 98414-2897"},
+    {n:"Sítio Novo",s:false,lat:-5.8333,lng:-45.7167,cmt:"1° TEN QOPM Cefhas",tel:"(98) 99162-5653"},
+  ]},
+  {num:"2°EPMont",sede:"Imperatriz",lat:-5.5261,lng:-47.4800,
+   cmt:"MAJ QOPM Nunes",tel:"(99) 98110-4840",
+   muns:[
+    {n:"Imperatriz (2°EPMont)",s:true,lat:-5.5261,lng:-47.4800,cmt:"MAJ QOPM Nunes",tel:"(99) 98110-4840"},
+  ]},
+]},
+
+"CPAI-4":{cor:"#38b85a",bpms:[
+  {num:"2°BPM",sede:"Caxias",lat:-4.8681,lng:-43.3594,
+   cmt:"TEN CEL QOPM Ricardo",tel:"(99) 98208-7986",
+   muns:[
+    {n:"Caxias",s:true,lat:-4.8681,lng:-43.3594,cmt:"TEN CEL QOPM Ricardo",tel:"(99) 98208-7986"},
+    {n:"Aldeias Altas",s:false,lat:-4.6361,lng:-43.6828,cmt:"2° TEN QOAPM Ronant",tel:"(99) 98193-7019"},
+    {n:"São João do Sóter",s:false,lat:-5.5000,lng:-43.7667,cmt:"2° TEN QOAPM Aurélio",tel:"(99) 98234-4454"},
+  ]},
+  {num:"11°BPM",sede:"Timon",lat:-5.0942,lng:-42.8386,
+   cmt:"TEN CEL QOPM Kraieski",tel:"(86) 99960-9249",
+   muns:[
+    {n:"Timon",s:true,lat:-5.0942,lng:-42.8386,cmt:"TEN CEL QOPM Kraieski",tel:"(86) 99960-9249"},
+    {n:"Matões",s:false,lat:-5.0333,lng:-43.6667,cmt:"1° TEN QOPM Saulo",tel:"(86) 99902-8616"},
+    {n:"Parnarama",s:false,lat:-5.6833,lng:-43.1000,cmt:"2° TEN QOPM Cury",tel:"(86) 98822-1092"},
+  ]},
+  {num:"17°BPM",sede:"Codó",lat:-4.4558,lng:-43.8822,
+   cmt:"TC QOPM Senilson",tel:"(98) 99170-4618",
+   muns:[
+    {n:"Codó",s:true,lat:-4.4558,lng:-43.8822,cmt:"TC QOPM Senilson",tel:"(98) 99170-4618"},
+    {n:"Timbiras",s:false,lat:-3.9603,lng:-43.9408,cmt:"1° QOPM Iury",tel:"(98) 98108-2052"},
+  ]},
+  {num:"24°BPM",sede:"Coroatá",lat:-4.1278,lng:-44.1225,
+   cmt:"TC Luís Rodrigo",tel:"(99) 98173-1563",
+   muns:[
+    {n:"Coroatá",s:true,lat:-4.1278,lng:-44.1225,cmt:"TC Luís Rodrigo",tel:"(99) 98173-1563"},
+    {n:"Peritoró",s:false,lat:-4.3667,lng:-44.5000,cmt:"1° TEN QOPM Joaz",tel:"(98) 98313-8812"},
+  ]},
+  {num:"44°BPM",sede:"Coelho Neto",lat:-4.2572,lng:-43.0111,
+   cmt:"MAJ Ramalho",tel:"(98) 98813-3916",
+   muns:[
+    {n:"Coelho Neto",s:true,lat:-4.2572,lng:-43.0111,cmt:"MAJ Ramalho",tel:"(98) 98813-3916"},
+    {n:"Afonso Cunha",s:false,lat:-4.9667,lng:-43.5833,cmt:"2° SGT 626/07 Sérgio",tel:"(86) 99552-4362"},
+    {n:"Buriti",s:false,lat:-3.9500,lng:-42.9000,cmt:"ASP Carvalho",tel:"(98) 98462-6381"},
+    {n:"Duque Bacelar",s:false,lat:-4.5000,lng:-42.8500,cmt:"2° SGT 950/07 Deyvid",tel:"(86) 99930-8686"},
+  ]},
+  {num:"47°BPM",sede:"Timon Norte",lat:-5.0700,lng:-42.8200,
+   cmt:"TEN CEL QOPM Yaslan",tel:"(99) 99922-6256",
+   muns:[
+    {n:"Timon Norte (47°BPM)",s:true,lat:-5.0700,lng:-42.8200,cmt:"TEN CEL QOPM Yaslan",tel:"(99) 99922-6256"},
+  ]},
+]},
+
+"CPAI-5":{cor:"#9b6ef5",bpms:[
+  {num:"10°BPM",sede:"Pinheiro",lat:-2.5222,lng:-45.0817,
+   cmt:"MAJ Wellington",tel:"(98) 98737-4482",
+   muns:[
+    {n:"Pinheiro",s:true,lat:-2.5222,lng:-45.0817,cmt:"MAJ Wellington",tel:"(98) 98737-4482"},
+    {n:"Presidente Sarney",s:false,lat:-3.1667,lng:-45.5167,cmt:"2° SGT Lisboa",tel:"(98) 98516-8193"},
+    {n:"Pedro do Rosário",s:false,lat:-3.0333,lng:-45.1167,cmt:"3° SGT S Oliveira",tel:"(98) 98460-8335"},
+    {n:"São Bento",s:false,lat:-2.6917,lng:-44.8167,cmt:"TEN Jackson",tel:"(98) 98548-2481"},
+    {n:"Bacurituba",s:false,lat:-2.7667,lng:-44.9833,cmt:"3° SGT Viegas",tel:"(98) 98897-4561"},
+    {n:"Santa Helena",s:false,lat:-2.2333,lng:-45.3167,cmt:"TEN Braga Junior",tel:"(98) 99243-6850"},
+    {n:"Turilândia",s:false,lat:-2.6167,lng:-45.4833,cmt:"2° SGT Matos",tel:"(98) 99226-5217"},
+    {n:"Turiaçu",s:false,lat:-1.7083,lng:-45.3667,cmt:"CB Edmilson",tel:"(98) 98232-1174"},
+  ]},
+  {num:"25°BPM",sede:"Cururupu",lat:-1.8256,lng:-44.8625,
+   cmt:"TC QOPM Zadock",tel:"(98) 98198-1892",
+   muns:[
+    {n:"Cururupu",s:true,lat:-1.8256,lng:-44.8625,cmt:"TC QOPM Zadock",tel:"(98) 98198-1892"},
+    {n:"Serrano do Maranhão",s:false,lat:-2.0167,lng:-45.0667,cmt:"2° TEN QOPM Rodrigues",tel:"(99) 98216-8437"},
+    {n:"Bacuri",s:false,lat:-1.6500,lng:-44.7167,cmt:"2° SGT PM Ediney",tel:"(98) 98311-4491"},
+    {n:"Apicum-Açu",s:false,lat:-1.5000,lng:-44.6000,cmt:"3° SGT PM Valdson",tel:"(98) 98424-9928"},
+  ]},
+  {num:"36°BPM",sede:"Viana",lat:-3.2178,lng:-45.0053,
+   cmt:"MAJ QOPM Alexandre",tel:"(98) 98706-0464",
+   muns:[
+    {n:"Viana",s:true,lat:-3.2178,lng:-45.0053,cmt:"MAJ QOPM Alexandre",tel:"(98) 98706-0464"},
+    {n:"Arari",s:false,lat:-3.4583,lng:-44.7778,cmt:"SD PM Pacheco",tel:"(98) 98423-2010"},
+    {n:"Cajapió",s:false,lat:-3.0000,lng:-44.7167,cmt:"SD PM Filipe Alves",tel:"(98) 98443-9404"},
+    {n:"Cajari",s:false,lat:-3.2500,lng:-45.0000,cmt:"3° SGT PM Aprígio",tel:"(98) 98431-1425"},
+    {n:"Matinha",s:false,lat:-3.1167,lng:-44.9667,cmt:"3° SGT PM Valdecy",tel:"(98) 98801-9333"},
+    {n:"Olinda Nova do Maranhão",s:false,lat:-2.9167,lng:-45.5000,cmt:"CB PM Rogers Lima",tel:"(98) 98164-3707"},
+    {n:"Penalva",s:false,lat:-3.2833,lng:-45.1667,cmt:"2° SGT PM Marques",tel:"(98) 98446-3567"},
+    {n:"São João Batista",s:false,lat:-2.9500,lng:-44.8000,cmt:"CB PM J. Araujo",tel:"(99) 98465-2345"},
+    {n:"São Vicente Ferrer",s:false,lat:-3.5667,lng:-44.8833,cmt:"SD PM Magno",tel:"(98) 98474-0902"},
+    {n:"Vitória do Mearim",s:false,lat:-3.4667,lng:-44.9000,cmt:"SD PM Jhony",tel:"(98) 98889-7047"},
+    {n:"Povoado Jacaré",s:false,lat:-3.3667,lng:-44.9833,cmt:"SD PM Caio",tel:"(98) 98482-2063"},
+    {n:"Povoado Acoquerê",s:false,lat:-3.4167,lng:-44.7500,cmt:"CB PM Passos",tel:"(98) 98499-6279"},
+  ]},
+  {num:"41°BPM",sede:"Mirinzal",lat:-2.0236,lng:-44.7764,
+   cmt:"MAJ Andrade",tel:"(98) 98265-7889",
+   muns:[
+    {n:"Mirinzal",s:true,lat:-2.0236,lng:-44.7764,cmt:"MAJ Andrade",tel:"(98) 98265-7889"},
+    {n:"Central do Maranhão",s:false,lat:-2.1167,lng:-44.9333,cmt:"3° SGT 301/02 Iragilson",tel:"(98) 98424-7154"},
+    {n:"Guimarães",s:false,lat:-2.1333,lng:-44.6000,cmt:"2° TEN Reginaldo",tel:"(98) 98239-6826"},
+    {n:"Porto Rico do Maranhão",s:false,lat:-1.9000,lng:-44.7500,cmt:"3° SGT PM 133/10 Cleber",tel:"(98) 98506-4977"},
+    {n:"Cedral",s:false,lat:-3.1833,lng:-45.0333,cmt:"3° SGT PM 256/02 Norberto",tel:"(98) 98549-4111"},
+  ]},
+  {num:"45°BPM",sede:"Bequimão",lat:-2.4333,lng:-44.7833,
+   cmt:"CAP QOPM Gleydson",tel:"(98) 98727-9909",
+   muns:[
+    {n:"Bequimão",s:true,lat:-2.4333,lng:-44.7833,cmt:"CAP QOPM Gleydson",tel:"(98) 98727-9909"},
+    {n:"Alcântara",s:false,lat:-2.4069,lng:-44.4133,cmt:"2° TEN QOPM Licá",tel:"(98) 97018-3553"},
+    {n:"Cujupe",s:false,lat:-2.3667,lng:-44.6500,cmt:"2° TEN QOPM Licá",tel:"(98) 97018-3553"},
+    {n:"Peri-Mirim",s:false,lat:-2.4667,lng:-44.8667,cmt:"ASP R. Moura",tel:"(86) 98860-4616"},
+    {n:"Palmeirândia",s:false,lat:-2.5667,lng:-44.7833,cmt:"ASP Wellingtton",tel:"(98) 98108-2536"},
+  ]},
+]},
+
+"CPAI-6":{cor:"#d4b830",bpms:[
+  {num:"4°BPM",sede:"Balsas",lat:-7.5322,lng:-46.0358,
+   cmt:"MAJ PM Jean Levi",tel:"(99) 98123-1768",
+   muns:[
+    {n:"Balsas",s:true,lat:-7.5322,lng:-46.0358,cmt:"MAJ PM Jean Levi",tel:"(99) 98123-1768"},
+    {n:"Alto Parnaíba",s:false,lat:-9.1031,lng:-45.9336,cmt:"2° SGT PM Júlio",tel:"(99) 98104-4510"},
+    {n:"Feira Nova do Maranhão",s:false,lat:-7.1500,lng:-46.6833,cmt:"1° SGT PM Reis",tel:"(99) 98848-8979"},
+    {n:"Fortaleza dos Nogueiras",s:false,lat:-7.0500,lng:-46.6333,cmt:"ST PM Mendes",tel:"(99) 98470-9754"},
+    {n:"Nova Colinas",s:false,lat:-6.0167,lng:-46.4000,cmt:"1° SGT PM J Neto",tel:"(99) 98139-2392"},
+    {n:"Riachão",s:false,lat:-7.3622,lng:-46.6150,cmt:"3° SGT PM Tirso",tel:"(99) 99881-9327"},
+    {n:"São Pedro dos Crentes",s:false,lat:-7.0000,lng:-46.8333,cmt:"Sub TEN Natividade",tel:"(99) 99954-0091"},
+    {n:"Tasso Fragoso",s:false,lat:-8.4667,lng:-45.7500,cmt:"CB PM Azevedo",tel:"(99) 98446-1987"},
+    {n:"Loreto",s:false,lat:-7.0750,lng:-45.1417,cmt:"3° SGT PM Wagner",tel:"(99) 98835-2770"},
+  ]},
+  {num:"35°BPM",sede:"São João dos Patos",lat:-6.4953,lng:-43.7025,
+   cmt:"TEN CEL QOPM Fernando",tel:"(99) 98156-6610",
+   muns:[
+    {n:"São João dos Patos",s:true,lat:-6.4953,lng:-43.7025,cmt:"TEN CEL QOPM Fernando",tel:"(99) 98156-6610"},
+    {n:"Barão de Grajaú",s:false,lat:-6.7500,lng:-43.0333,cmt:"2° TEN QOPM Victor Emanuel",tel:"(99) 99951-3666"},
+    {n:"Lagoa do Mato",s:false,lat:-6.0833,lng:-43.4167,cmt:"2° TEN QOAPM Raimundo José",tel:"(99) 98448-8629"},
+    {n:"Nova Iorque",s:false,lat:-6.7167,lng:-44.0167,cmt:"3° SGT PM 101/01 Cinézio",tel:"(99) 98155-7691"},
+    {n:"Paraibano",s:false,lat:-6.4167,lng:-44.0333,cmt:"ST PM Jean da Costa Lima",tel:"(86) 99503-8930"},
+    {n:"Passagem Franca",s:false,lat:-6.1667,lng:-43.8000,cmt:"2° SGT PM 62/02 Antonio Torres",tel:"(86) 99523-3757"},
+    {n:"Pastos Bons",s:false,lat:-6.5833,lng:-44.0833,cmt:"2° TEN QOPM Elson Carlos",tel:"(86) 98824-2871"},
+    {n:"São Francisco do Maranhão",s:false,lat:-6.2500,lng:-42.6000,cmt:"3° SGT PM José Airton",tel:"(86) 99970-7769"},
+    {n:"Sucupira do Riachão",s:false,lat:-6.4667,lng:-43.3333,cmt:"3° SGT PM Francisco Cleverton",tel:"(89) 99420-5317"},
+  ]},
+  {num:"46°BPM",sede:"S.R. das Mangabeiras",lat:-7.0217,lng:-45.4858,
+   cmt:"TEN CEL QOPM Gilberto",tel:"(99) 98805-7646",
+   muns:[
+    {n:"São Raimundo das Mangabeiras",s:true,lat:-7.0217,lng:-45.4858,cmt:"TEN CEL QOPM Gilberto",tel:"(99) 98805-7646"},
+    {n:"Benedito Leite",s:false,lat:-7.2000,lng:-44.5667,cmt:"3° SGT PM James",tel:"(89) 99409-0197"},
+    {n:"Loreto (46°BPM)",s:false,lat:-7.0900,lng:-45.1200,cmt:"CB PM Albetiza",tel:"(99) 98445-1961"},
+    {n:"Sambaíba",s:false,lat:-7.1333,lng:-45.3333,cmt:"1° SGT Celso",tel:"(99) 98453-8026"},
+    {n:"São Domingos do Azeitão",s:false,lat:-6.5000,lng:-44.6000,cmt:"Sub TEN PM Pontes",tel:"(99) 98148-9848"},
+    {n:"São Félix de Balsas",s:false,lat:-7.3167,lng:-44.8167,cmt:"3° SGT PM Romulo",tel:"(89) 99458-9378"},
+  ]},
+]},
+
+"CPAI-7":{cor:"#28d090",bpms:[
+  {num:"16°BPM",sede:"Chapadinha",lat:-3.7425,lng:-43.3592,
+   cmt:"TC Jaldemir",tel:"(98) 98718-8841",
+   muns:[
+    {n:"Chapadinha",s:true,lat:-3.7425,lng:-43.3592,cmt:"TC Jaldemir",tel:"(98) 98718-8841"},
+    {n:"Anapurus",s:false,lat:-3.6667,lng:-43.1167,cmt:"ST Alcinézio",tel:"(98) 98405-5002"},
+    {n:"Belágua",s:false,lat:-3.0000,lng:-43.6167,cmt:"SGT Calazans",tel:"(98) 98755-0929"},
+    {n:"Brejo",s:false,lat:-3.6833,lng:-42.7500,cmt:"TEN Max",tel:"(98) 98504-9460"},
+    {n:"Magalhães de Almeida",s:false,lat:-3.4000,lng:-42.2167,cmt:"SGT Machado",tel:"(98) 98240-6591"},
+    {n:"Mata Roma",s:false,lat:-3.6667,lng:-43.1167,cmt:"SGT Nunes",tel:"(98) 98512-4868"},
+    {n:"Milagres do Maranhão",s:false,lat:-4.0167,lng:-42.7667,cmt:"TEN Max",tel:"(98) 98504-9460"},
+    {n:"Santa Quitéria do MA",s:false,lat:-3.4167,lng:-42.6333,cmt:"TEN Max",tel:"(98) 98504-9460"},
+    {n:"Santana do Maranhão",s:false,lat:-3.4500,lng:-42.1167,cmt:"SGT Denis",tel:"(98) 98220-0004"},
+    {n:"São Benedito do Rio Preto",s:false,lat:-3.3167,lng:-43.6000,cmt:"SGT Arinaldo",tel:"(98) 98706-6851"},
+    {n:"São Bernardo",s:false,lat:-3.3833,lng:-42.4167,cmt:"TEN Flávio",tel:"(98) 99165-5599"},
+    {n:"Urbano Santos",s:false,lat:-3.2083,lng:-43.4000,cmt:"SGT L. Neto",tel:"(98) 98463-2856"},
+  ]},
+  {num:"27°BPM",sede:"Rosário",lat:-2.9333,lng:-44.2500,
+   cmt:"MAJ QOPM Lucena Junior",tel:"(98) 99131-8080",
+   muns:[
+    {n:"Rosário",s:true,lat:-2.9333,lng:-44.2500,cmt:"MAJ QOPM Lucena Junior",tel:"(98) 99131-8080"},
+    {n:"Axixá",s:false,lat:-2.8333,lng:-44.0667,cmt:"CAP QOPM Victor",tel:"(98) 98436-2222"},
+    {n:"Bacabeira",s:false,lat:-2.9833,lng:-44.3167,cmt:"TEN QOPM Freire",tel:"(98) 98400-7062"},
+    {n:"Cachoeira Grande",s:false,lat:-3.1000,lng:-44.2500,cmt:"TEN QOPM Freire",tel:"(98) 98400-7062"},
+    {n:"Icatú",s:false,lat:-2.7667,lng:-44.0333,cmt:"CAP QOPM Victor",tel:"(98) 98436-2222"},
+    {n:"Itatuaba",s:false,lat:-2.9667,lng:-44.1833,cmt:"CAP QOPM Victor",tel:"(98) 98436-2222"},
+    {n:"Morros",s:false,lat:-2.8500,lng:-44.0500,cmt:"CAP QOPM Victor",tel:"(98) 98436-2222"},
+    {n:"Presidente Juscelino",s:false,lat:-3.1667,lng:-44.0000,cmt:"TEN QOPM Freire",tel:"(98) 98400-7062"},
+    {n:"Santa Rita",s:false,lat:-3.1692,lng:-44.3261,cmt:"TEN QOPM Mesquita",tel:"(98) 98277-4581"},
+  ]},
+  {num:"28°BPM",sede:"Itapecuru-Mirim",lat:-3.3978,lng:-44.3533,
+   cmt:"TC QOPM Pereira",tel:"(98) 98492-2017",
+   muns:[
+    {n:"Itapecuru-Mirim",s:true,lat:-3.3978,lng:-44.3533,cmt:"TC QOPM Pereira",tel:"(98) 98492-2017"},
+    {n:"Anajatuba",s:false,lat:-3.2667,lng:-44.6167,cmt:"1° TEN QOPM Rosa",tel:"(98) 98297-0799"},
+    {n:"Nina Rodrigues",s:false,lat:-3.5167,lng:-43.9167,cmt:"1° TEN QOPM Sampaio",tel:"(98) 98270-6689"},
+    {n:"Presidente Vargas",s:false,lat:-3.7333,lng:-45.0667,cmt:"1° TEN QOPM Sampaio",tel:"(98) 98270-6689"},
+    {n:"Vargem Grande",s:false,lat:-3.5333,lng:-43.9167,cmt:"1° TEN QOPM Sampaio",tel:"(98) 98270-6689"},
+  ]},
+]},
+
+"CPAI-8":{cor:"#8a9ab8",bpms:[
+  {num:"7°BPM",sede:"Pindaré-Mirim",lat:-3.5931,lng:-45.3644,
+   cmt:"MAJOR Danyelle",tel:"(98) 98833-6744",
+   muns:[
+    {n:"Pindaré-Mirim",s:true,lat:-3.5931,lng:-45.3644,cmt:"MAJOR Danyelle",tel:"(98) 98833-6744"},
+    {n:"Alto Alegre do Pindaré",s:false,lat:-3.9000,lng:-46.0000,cmt:"2° SGT PM Moisés",tel:"(98) 98436-9089"},
+    {n:"Bela Vista do Maranhão",s:false,lat:-3.5167,lng:-45.3000,cmt:"2° SGT PM 601/92 Viana",tel:"(98) 98570-6300"},
+    {n:"Bom Jardim",s:false,lat:-3.5167,lng:-45.6000,cmt:"1° TEN QOAPM Corrêa",tel:"(98) 98158-1992"},
+    {n:"DPM de Faísa",s:false,lat:-3.7333,lng:-45.5667,cmt:"3° SGT PM Ítalo",tel:"(98) 99910-7481"},
+    {n:"Igarapé do Meio",s:false,lat:-3.6833,lng:-45.2333,cmt:"3° SGT PM R. Gomes",tel:"(98) 98767-5631"},
+    {n:"Monção",s:false,lat:-3.4833,lng:-45.1833,cmt:"3° SGT PM Soares",tel:"(98) 98852-6073"},
+    {n:"Pio XII",s:false,lat:-3.8833,lng:-45.1667,cmt:"3° SGT PM Jorge",tel:"(99) 99129-5002"},
+    {n:"Santa Inês",s:false,lat:-3.6667,lng:-45.3833,cmt:"CAP QOM Rocha",tel:"(98) 98139-2230"},
+    {n:"Santa Luzia",s:false,lat:-3.9667,lng:-45.7833,cmt:"CAP QOPM Protázio",tel:"(98) 98255-4629"},
+    {n:"São João do Carú",s:false,lat:-4.3000,lng:-46.1000,cmt:"3° SGT PM Castro",tel:"(98) 98585-2567"},
+    {n:"Satubinha",s:false,lat:-4.0333,lng:-45.5167,cmt:"2° SGT PM Mafra",tel:"(98) 98484-0568"},
+    {n:"Tufilândia",s:false,lat:-3.6000,lng:-45.9000,cmt:"3° SGT PM Pena",tel:"(98) 98554-3196"},
+    {n:"Auzilândia",s:false,lat:-3.7167,lng:-45.7667,cmt:"—",tel:"—"},
+  ]},
+  {num:"29°BPM",sede:"Zé Doca",lat:-3.2719,lng:-45.6572,
+   cmt:"MAJ QOPM Josuel",tel:"(98) 98917-3913",
+   muns:[
+    {n:"Zé Doca",s:true,lat:-3.2719,lng:-45.6572,cmt:"MAJ QOPM Josuel",tel:"(98) 98917-3913"},
+    {n:"Araguanã",s:false,lat:-2.9500,lng:-45.8833,cmt:"CB PM 251/14 S. Ferreira",tel:"(98) 98431-7292"},
+    {n:"Centro do Guilherme",s:false,lat:-1.7167,lng:-46.0667,cmt:"3° SGT PM 742/07 Ciriaco",tel:"(98) 98526-8885"},
+    {n:"Governador Newton Bello",s:false,lat:-2.6333,lng:-45.8500,cmt:"3° SGT PM Sousa",tel:"(98) 98498-4171"},
+    {n:"Nova Olinda do MA",s:false,lat:-3.2000,lng:-46.1000,cmt:"3° SGT PM 220/07 Rios",tel:"(98) 98438-3681"},
+    {n:"Maranhãozinho",s:false,lat:-2.3667,lng:-46.0833,cmt:"3° SGT PM 272/01 Alex",tel:"(98) 99701-6981"},
+    {n:"Presidente Médici",s:false,lat:-2.7000,lng:-45.9000,cmt:"1° SGT PM 572/93 Bezerra",tel:"(98) 98123-2606"},
+    {n:"Santa Luzia do Paruá",s:false,lat:-2.8833,lng:-46.0167,cmt:"CAP QOPM Samuel",tel:"(98) 98345-4757"},
+  ]},
+  {num:"31°BPM",sede:"Gov. Nunes Freire",lat:-2.7258,lng:-46.4756,
+   cmt:"TEN CEL Neildon",tel:"(98) 98167-4078",
+   muns:[
+    {n:"Governador Nunes Freire",s:true,lat:-2.7258,lng:-46.4756,cmt:"TEN CEL Neildon",tel:"(98) 98167-4078"},
+    {n:"Amapá do Maranhão",s:false,lat:-2.1167,lng:-46.0833,cmt:"2° SGT Belfort",tel:"(98) 98527-3162"},
+    {n:"Boa Vista do Gurupi",s:false,lat:-1.8667,lng:-46.1667,cmt:"2° SGT Sales",tel:"(99) 98448-6942"},
+    {n:"Cândido Mendes",s:false,lat:-1.4500,lng:-45.7167,cmt:"2° SGT Tiago Pereira",tel:"(98) 98134-4276"},
+    {n:"Carutapera",s:false,lat:-1.2000,lng:-46.0167,cmt:"2° SGT Lailson",tel:"(98) 98244-1029"},
+    {n:"Centro Novo do Maranhão",s:false,lat:-2.1000,lng:-46.6000,cmt:"3° SGT Marinho",tel:"(98) 98438-9650"},
+    {n:"Godofredo Viana",s:false,lat:-1.4000,lng:-45.9333,cmt:"3° SGT Passos",tel:"(98) 98501-3289"},
+    {n:"Junco do Maranhão",s:false,lat:-1.4833,lng:-46.2833,cmt:"ST Lélis",tel:"(98) 97006-7023"},
+    {n:"Luís Domingues",s:false,lat:-1.2667,lng:-45.7833,cmt:"3° SGT Bispo",tel:"(98) 98113-5875"},
+    {n:"Maracaçumé",s:false,lat:-2.0000,lng:-45.9000,cmt:"2° SGT Pereira",tel:"(98) 98428-2374"},
+  ]},
+]},
+};
+
+// ── helpers ──
+function waLink(tel){
+  if(!tel||tel==="—") return null;
+  const num = tel.replace(/\D/g,'');
+  return `https://wa.me/55${num}`;
+}
+function fmtTel(tel,cor){
+  if(!tel||tel==="—") return `<span style="color:var(--t3)">—</span>`;
+  const wa = waLink(tel);
+  return `<a class="pu-cmt-phone" href="${wa}" target="_blank" rel="noopener">
+    <span class="wa">💬</span>${tel}
+    <span style="margin-left:auto;font-size:.58rem;color:#25D366">WhatsApp</span>
+  </a>`;
+}
+
+// ── MAP ──
+const map = L.map('map',{center:[-4.9,-44.9],zoom:7,zoomControl:true,tap:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:16,subdomains:'abcd'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',{maxZoom:16,subdomains:'abcd',pane:'shadowPane'}).addTo(map);
+
+// ── Icons ──
+function mkIcon(cor,isSede){
+  const s=isSede?14:8;
+  const glow=isSede?`box-shadow:0 0 10px ${cor}cc;`:`box-shadow:0 0 5px ${cor}55;`;
+  const brd=isSede?`border:2px solid rgba(255,255,255,.8);`:`border:1.5px solid rgba(255,255,255,.3);`;
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${s}px;height:${s}px;border-radius:50%;background:${cor};${brd}${glow}cursor:pointer;transition:transform .15s"></div>`,
+    iconSize:[s,s],iconAnchor:[s/2,s/2]
+  });
+}
+function mkLabel(txt,cor){
+  return L.divIcon({
+    className:'',
+    html:`<div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;
+      color:${cor};pointer-events:none;white-space:nowrap;
+      text-shadow:0 0 6px #000,0 0 12px #000,-1px -1px 0 #000,1px 1px 0 #000">${txt}</div>`,
+    iconAnchor:[-4,8]
+  });
+}
+
+// ── Build markers ──
+const LAYERS={}, ALL_PINS=[];
+let activeCpai=null;
+
+function buildMarkers(){
+  Object.entries(CPAIS).forEach(([ck,cpai])=>{
+    const lg=L.layerGroup().addTo(map);
+    LAYERS[ck]=lg;
+    let sLat=0,sLng=0,cnt=0;
+    cpai.bpms.forEach(b=>b.muns.forEach(m=>{sLat+=m.lat;sLng+=m.lng;cnt++;}));
+    L.marker([sLat/cnt,sLng/cnt],{icon:mkLabel(ck,cpai.cor),interactive:false}).addTo(lg);
+
+    cpai.bpms.forEach(bpm=>{
+      bpm.muns.forEach(m=>{
+        const mk=L.marker([m.lat,m.lng],{icon:mkIcon(cpai.cor,m.s),title:m.n,zIndexOffset:m.s?500:0});
+        mk.bindPopup(buildPU(m,bpm,ck,cpai),{maxWidth:300,className:''});
+        mk.on('click',()=>{if(activeCpai!==ck)selCpai(ck,false);});
+        lg.addLayer(mk);
+        ALL_PINS.push({cidade:m.n,cpai:ck,bpmNum:bpm.num,bpmSede:bpm.sede,cor:cpai.cor,isSede:m.s,lat:m.lat,lng:m.lng,marker:mk,cmt:m.cmt,tel:m.tel});
+      });
+    });
+  });
+}
+
+buildMarkers();
+
+function buildPU(m,bpm,ck,cpai){
+  const c=cpai.cor;
+  return `<div class="pu">
+    <div class="pu-top">
+      <div class="pu-badges">
+        <span class="pu-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${ck}</span>
+        <span class="pu-badge" style="background:var(--s2);color:var(--t2);border:1px solid var(--bd2)">${bpm.num}</span>
+        ${m.s?`<span class="pu-badge" style="background:${c}33;color:${c}">SEDE</span>`:''}
+      </div>
+    </div>
+    <div class="pu-city">${m.n}</div>
+    <div class="pu-type">${m.s?`Sede do ${bpm.num}`:`Município subordinado · ${bpm.num}`}</div>
+    <div class="pu-cmt">
+      <div class="pu-cmt-role">Comandante</div>
+      <div class="pu-cmt-name">${m.cmt}</div>
+      ${fmtTel(m.tel,c)}
+    </div>
+    <div class="pu-divider"></div>
+    <div class="pu-row"><span class="pu-l">Batalhão</span><span class="pu-r">${bpm.num}</span></div>
+    <div class="pu-row"><span class="pu-l">Sede BPM</span><span class="pu-r">${bpm.sede}</span></div>
+    <div class="pu-row"><span class="pu-l">Cmt BPM</span><span class="pu-r">${bpm.cmt}</span></div>
+    ${bpm.cmt!==m.cmt?`<div class="pu-row"><span class="pu-l">Tel BPM</span><span class="pu-r">${fmtTel(bpm.tel,c).replace('class="pu-cmt-phone"','class="pu-cmt-phone" style="padding:.25rem .5rem;font-size:.65rem"')}</span></div>`:''}
+  </div>`;
+}
+
+// ── Select CPAI ──
+function selCpai(key,doZoom){
+  activeCpai=key;
+  // sync pill highlights
+  document.querySelectorAll('.cpill').forEach(p=>{
+    p.classList.remove('active');
+    p.style.background=''; p.style.borderColor=''; p.style.color='';
+  });
+  if(!key){
+    const t=document.getElementById('pill-todos');
+    if(t) t.classList.add('active');
+  } else {
+    const p=document.getElementById(`pill-${key}`);
+    if(p&&CPAIS[key]){
+      p.classList.add('active');
+      const cor=CPAIS[key].cor;
+      p.style.background=cor+'33'; p.style.borderColor=cor; p.style.color=cor;
+    }
+  }
+  Object.entries(LAYERS).forEach(([k,lg])=>{
+    lg.eachLayer(l=>{if(l._icon)l._icon.style.opacity=(!key||k===key)?'1':'0.07';});
+  });
+  if(key&&doZoom){
+    const pts=ALL_PINS.filter(p=>p.cpai===key).map(p=>[p.lat,p.lng]);
+    if(pts.length)map.fitBounds(pts,{padding:[50,50],maxZoom:10,animate:true});
+  } else if(!key&&doZoom){
+    map.setView([-4.9,-44.9],7,{animate:true});
+  }
+  // desktop UI
+  const dsel=document.getElementById('diov-sel');
+  if(dsel){
+    if(key){
+      dsel.style.display='flex';
+      document.getElementById('diov-sel-v').textContent=key;
+      document.getElementById('diov-sel-v').style.color=CPAIS[key].cor;
+      document.getElementById('diov-title').textContent=`📌 ${key}`;
+    } else {
+      dsel.style.display='none';
+      document.getElementById('diov-title').textContent='📊 CPI — PMMA 2026';
+    }
+  }
+}
+
+// ════════════════════════════════════
+// BUILD UI CONTENT
+// ════════════════════════════════════
+function buildCpaiList(container){
+  container.innerHTML='';
+  let totBpm=0,totCid=0;
+  Object.entries(CPAIS).forEach(([ck,cpai])=>{
+    const cidCnt=cpai.bpms.reduce((s,b)=>s+b.muns.length,0);
+    totBpm+=cpai.bpms.length; totCid+=cidCnt;
+    const card=document.createElement('div'); card.className='cpai-card';
+    card.innerHTML=`
+      <div class="cpai-hd" onclick="toggleAcc('${ck}')">
+        <div class="cpai-stripe" style="background:${cpai.cor}"></div>
+        <div class="cpai-name">${ck}</div>
+        <div class="cpai-counts">
+          <span class="cpai-cnt" style="background:${cpai.cor}22;color:${cpai.cor}">${cpai.bpms.length} BPM</span>
+          <span class="cpai-cnt" style="background:var(--s2);color:var(--t2)">${cidCnt} mun</span>
+        </div>
+        <div class="cpai-arr" id="arr-${ck}">▶</div>
+      </div>
+      <div class="cpai-body" id="body-${ck}">${buildBpmRows(ck,cpai)}</div>`;
+    container.appendChild(card);
+  });
+  return {totBpm,totCid};
+}
+
+function buildBpmRows(ck,cpai){
+  return cpai.bpms.map(bpm=>`
+    <div class="bpm-row" onclick="toggleBpmCities('${ck}','${bpm.num}')">
+      <div class="bpm-bullet" style="background:${cpai.cor}"></div>
+      <div class="bpm-info">
+        <div class="bpm-num">${bpm.num}</div>
+        <div class="bpm-sede">Sede: ${bpm.sede}</div>
+        <div class="bpm-cmt-mini">Cmt: ${bpm.cmt}</div>
+      </div>
+      <span class="bpm-cnt" style="background:${cpai.cor}22;color:${cpai.cor}">${bpm.muns.length}</span>
+    </div>
+    <div class="city-sub" id="csub-${ck}-${bpm.num.replace(/[°\s]/g,'_')}">
+      ${bpm.muns.map(m=>`
+        <div class="city-sub-item" onclick="flyToMun('${m.n}','${ck}')">
+          <div class="city-sub-dot" style="background:${m.s?cpai.cor:cpai.cor+'77'}"></div>
+          <span class="city-sub-name${m.s?' sede-name':''}">${m.n}</span>
+          ${m.s?`<span class="city-sede-lbl" style="background:${cpai.cor}33;color:${cpai.cor}">SEDE</span>`:''}
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function toggleAcc(ck){
+  const body=document.querySelectorAll(`[id="body-${ck}"]`);
+  const arrs=document.querySelectorAll(`[id="arr-${ck}"]`);
+  body.forEach(b=>{
+    const isOpen=b.classList.contains('open');
+    // close all
+    document.querySelectorAll('.cpai-body').forEach(x=>x.classList.remove('open'));
+    document.querySelectorAll('.cpai-arr').forEach(x=>x.classList.remove('open'));
+    if(!isOpen){b.classList.add('open');}
+  });
+  arrs.forEach(a=>{
+    const isOpen=a.classList.contains('open');
+    if(!isOpen)a.classList.add('open');
+  });
+  selCpai(body[0]?.classList.contains('open')?ck:null,true);
+}
+
+function toggleBpmCities(ck,bpmNum){
+  const id=`csub-${ck}-${bpmNum.replace(/[°\s]/g,'_')}`;
+  document.querySelectorAll(`[id="${id}"]`).forEach(el=>{
+    el.classList.toggle('open');
+  });
+  // Fly to BPM seat
+  const bpm=CPAIS[ck]?.bpms.find(b=>b.num===bpmNum);
+  if(bpm){selCpai(ck,false);map.setView([bpm.lat,bpm.lng],11,{animate:true});}
+}
+
+function flyToMun(nome,ck){
+  const pin=ALL_PINS.find(p=>p.cidade===nome&&p.cpai===ck);
+  if(!pin)return;
+  closePanel();
+  selCpai(ck,false);
+  map.setView([pin.lat,pin.lng],13,{animate:true});
+  setTimeout(()=>pin.marker.openPopup(),450);
+}
+
+// ── Legend ──
+function buildLegend(container){
+  container.innerHTML='';
+  Object.entries(CPAIS).forEach(([k,cpai])=>{
+    container.innerHTML+=`<div class="leg-item"><div class="leg-dot" style="background:${cpai.cor}"></div>${k}</div>`;
+  });
+}
+
+// ── Stats ──
+function buildStats(container,totBpm,totCid){
+  container.innerHTML=`
+    <div class="sbox"><div class="sbox-n">8</div><div class="sbox-l">CPAIs</div></div>
+    <div class="sbox"><div class="sbox-n">${totBpm}</div><div class="sbox-l">BPMs</div></div>
+    <div class="sbox"><div class="sbox-n">${totCid}</div><div class="sbox-l">Municípios</div></div>`;
+}
+
+// ════════════════════════════════════
+// SEARCH
+// ════════════════════════════════════
+const si=document.getElementById('si'),sdrop=document.getElementById('sdrop');
+si.addEventListener('input',e=>doSearch(e.target.value.trim()));
+si.addEventListener('keydown',e=>{if(e.key==='Escape'){sdrop.classList.remove('open');si.value='';}});
+document.addEventListener('click',e=>{if(!e.target.closest('.sw'))sdrop.classList.remove('open');});
+
+function doSearch(q){
+  if(q.length<2){sdrop.classList.remove('open');return;}
+  const ql=q.toLowerCase();let html='';
+  // CPAI
+  const cpaiHits=Object.entries(CPAIS).filter(([k])=>k.toLowerCase().includes(ql));
+  if(cpaiHits.length){
+    html+=`<div class="sd-grp">Comandos CPAI</div>`;
+    cpaiHits.forEach(([k,cpai])=>{
+      const n=cpai.bpms.reduce((s,b)=>s+b.muns.length,0);
+      html+=`<div class="sd-item" onclick="sGo('cpai','${k}')">
+        <div class="sd-dot" style="background:${cpai.cor}"></div>
+        <div class="sd-main"><div class="sd-name">${k}</div><div class="sd-meta">${cpai.bpms.length} BPMs · ${n} municípios</div></div>
+        <div class="sd-tag" style="background:${cpai.cor}22;color:${cpai.cor}">CPAI</div></div>`;
+    });
+  }
+  // BPM
+  const bpmHits=[];
+  Object.entries(CPAIS).forEach(([k,cpai])=>cpai.bpms.forEach(b=>{
+    if(b.num.toLowerCase().includes(ql)||b.sede.toLowerCase().includes(ql)||b.cmt.toLowerCase().includes(ql))
+      bpmHits.push({k,cpai,b});
+  }));
+  if(bpmHits.length){
+    html+=`<div class="sd-grp">Batalhões (BPM)</div>`;
+    bpmHits.slice(0,6).forEach(({k,cpai,b})=>{
+      html+=`<div class="sd-item" onclick="sGo('bpm','${k}','${b.num}')">
+        <div class="sd-dot" style="background:${cpai.cor}"></div>
+        <div class="sd-main"><div class="sd-name">🔰 ${b.num} — ${b.sede}</div><div class="sd-meta">Cmt: ${b.cmt} · ${k}</div></div>
+        <div class="sd-tag" style="background:${cpai.cor}22;color:${cpai.cor}">${k}</div></div>`;
+    });
+  }
+  // City
+  const cityHits=ALL_PINS.filter(p=>p.cidade.toLowerCase().includes(ql)||p.cmt.toLowerCase().includes(ql)).slice(0,10);
+  if(cityHits.length){
+    html+=`<div class="sd-grp">Municípios / Comandantes</div>`;
+    cityHits.forEach(p=>{
+      html+=`<div class="sd-item" onclick="sGo('city','${p.cidade}','${p.cpai}')">
+        <div class="sd-dot" style="background:${p.cor}${p.isSede?'':'88'}"></div>
+        <div class="sd-main">
+          <div class="sd-name">${p.cidade}${p.isSede?' <span style="opacity:.6;font-size:.7em">[SEDE]</span>':''}</div>
+          <div class="sd-meta">${p.bpmNum} · ${p.cpai} · Cmt: ${p.cmt}</div>
+        </div>
+        <div class="sd-tag" style="background:${p.cor}22;color:${p.cor}">${p.cpai}</div></div>`;
+    });
+  }
+  if(!html)html=`<div class="sd-empty">Nenhum resultado para "<b>${q}</b>"</div>`;
+  sdrop.innerHTML=html; sdrop.classList.add('open');
+}
+
+function sGo(tipo,val,extra){
+  si.value=''; sdrop.classList.remove('open');
+  if(tipo==='cpai'){selCpai(val,true);mobileNav('map');return;}
+  if(tipo==='bpm'){
+    const bpm=CPAIS[val]?.bpms.find(b=>b.num===extra);
+    if(bpm){selCpai(val,false);map.setView([bpm.lat,bpm.lng],12,{animate:true});mobileNav('map');}
+    return;
+  }
+  flyToMun(val,extra); mobileNav('map');
+}
+
+// ════════════════════════════════════
+// MOBILE NAV
+// ════════════════════════════════════
+let currentPanel=null;
+function mobileNav(tab){
+  if(window.innerWidth>=768)return;
+  document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`bn-${tab}`)?.classList.add('active');
+  if(tab==='map'){closePanel();return;}
+  openPanel(tab);
+}
+
+function openPanel(tab){
+  const panel=document.getElementById('panel');
+  const overlay=document.getElementById('overlay');
+  const scroll=document.getElementById('panel-scroll');
+  const title=document.getElementById('panel-title');
+  currentPanel=tab;
+  scroll.innerHTML='';
+  if(tab==='cpai'||tab==='bpm'){
+    title.textContent=tab==='cpai'?'CPAIs / BPMs':'Batalhões';
+    // stats
+    const sb=document.createElement('div'); sb.className='stats-row';
+    scroll.appendChild(sb);
+    // filter pills
+    const fp=document.createElement('div'); fp.className='filter-pills';
+    fp.innerHTML=`<div class="fpill" style="border-color:rgba(255,255,255,.25);color:#fff;background:rgba(255,255,255,.1)" onclick="selCpai(null,true)">Todos</div>`+
+      Object.entries(CPAIS).map(([k,c])=>`<div class="fpill" style="border-color:${c.cor}55;color:${c.cor}" onclick="selCpai('${k}',true);closePanel()">${k}</div>`).join('');
+    scroll.appendChild(fp);
+    const r=buildCpaiList(scroll);
+    buildStats(sb,r.totBpm,r.totCid);
+  } else if(tab==='leg'){
+    title.textContent='Legenda — CPAIs';
+    const g=document.createElement('div'); g.className='leg-grid';
+    buildLegend(g); scroll.appendChild(g);
+    // Info
+    let totBpm=0,totCid=0;
+    Object.values(CPAIS).forEach(c=>{totBpm+=c.bpms.length;totCid+=c.bpms.reduce((s,b)=>s+b.muns.length,0);});
+    const info=document.createElement('div');
+    info.style.cssText='padding:.8rem 1rem;border-top:1px solid var(--bd2);font-size:.72rem;color:var(--t2)';
+    info.innerHTML=`<b style="color:var(--t1)">PMMA · CPI 2026</b><br>Total: 8 CPAIs · ${totBpm} BPMs · ${totCid} municípios<br><br>
+      <span style="color:var(--t3)">🟡 Marcador grande = Sede de BPM</span><br>
+      <span style="color:var(--t3)">⚫ Marcador pequeno = Município subordinado</span>`;
+    scroll.appendChild(info);
+  }
+  overlay.classList.add('show');
+  panel.classList.add('show');
+}
+
+function closePanel(){
+  document.getElementById('panel').classList.remove('show');
+  document.getElementById('overlay').classList.remove('show');
+  document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('bn-map')?.classList.add('active');
+  currentPanel=null;
+}
+
+// ════════════════════════════════════
+// DESKTOP SIDEBAR
+// ════════════════════════════════════
+let dsOpen=true;
+function toggleDS(){
+  dsOpen=!dsOpen;
+  const ds=document.getElementById('ds');
+  const btn=document.getElementById('dsb-toggle');
+  const dleg=document.getElementById('dleg');
+  const mapEl=document.getElementById('map');
+  if(dsOpen){ds.classList.remove('hidden');btn.style.left='300px';btn.textContent='◀';dleg.classList.remove('shifted');mapEl.classList.remove('full');}
+  else{ds.classList.add('hidden');btn.style.left='0';btn.textContent='▶';dleg.classList.add('shifted');mapEl.classList.add('full');}
+  setTimeout(()=>map.invalidateSize(),300);
+}
+
+// ════════════════════════════════════
+// TOAST
+// ════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ── PILLS ──
+function pillSel(key){
+  activeCpai=key;
+  // update pill styles
+  document.querySelectorAll('.cpill').forEach(p=>{
+    p.classList.remove('active');
+    p.style.background='';
+    p.style.borderColor='';
+    p.style.color='';
+  });
+  if(!key){
+    const t=document.getElementById('pill-todos');
+    if(t){t.classList.add('active');}
+  } else {
+    const p=document.getElementById(`pill-${key}`);
+    if(p){
+      p.classList.add('active');
+      const cor=CPAIS[key].cor;
+      p.style.background=cor+'33';
+      p.style.borderColor=cor;
+      p.style.color=cor;
+    }
+  }
+  selCpai(key, true);
+}
+
+function initPills(){
+  const bar=document.getElementById('pills-bar');
+  Object.entries(CPAIS).forEach(([k,cpai])=>{
+    const d=document.createElement('div');
+    d.className='cpill';
+    d.id=`pill-${k}`;
+    d.textContent=k;
+    d.style.borderColor=cpai.cor+'66';
+    d.style.color=cpai.cor;
+    d.onclick=()=>pillSel(k);
+    bar.appendChild(d);
+  });
+}
+
+// ════════════════════════════════════
+// INIT
+// ════════════════════════════════════
+(function init(){
+  initPills();
+  let totBpm=0,totCid=0;
+  Object.values(CPAIS).forEach(c=>{totBpm+=c.bpms.length;totCid+=c.bpms.reduce((s,b)=>s+b.muns.length,0);});
+
+  // Desktop sidebar
+  const dsStats=document.getElementById('ds-stats');
+  buildStats(dsStats,totBpm,totCid);
+  const r=buildCpaiList(document.getElementById('ds-scroll'));
+  document.getElementById('ds-info').textContent=`${Object.keys(CPAIS).length} CPAIs`;
+
+  // Desktop legend
+  buildLegend(document.getElementById('dleg-grid'));
+
+  // Desktop info overlay
+  document.getElementById('diov-bpm').textContent=totBpm;
+  document.getElementById('diov-cid').textContent=totCid;
+
+  // Header sub on mobile
+  document.getElementById('hdr-sub').textContent=`${totCid} municípios · ${totBpm} BPMs`;
+
+  // Resize handler
+  window.addEventListener('resize',()=>{
+    map.invalidateSize();
+    if(window.innerWidth>=768)closePanel();
+  });
+
+  // ── Google Sheets: carrega dados e agenda refresh ──
+  loadSheet();
+  setInterval(loadSheet, REFRESH_MS);
+})();
+</script>
+</body>
+</html>
